@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.get("/:id", getAnExercise);
 
-router.get("/", getAllExercises);
+router.get("/all", getAllExercises);
 
 router.post("/", createExercise);
 
