@@ -9,9 +9,9 @@ import {
 
 const router = express.Router();
 
-router.get("/:id", getAnExercise);
-
 router.get("/all", getAllExercises);
+
+router.get("/:id", getAnExercise);
 
 router.post("/", createExercise);
 

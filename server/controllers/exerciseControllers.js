@@ -1,16 +1,10 @@
-export const getAnExercise = (req, res) => {
-  const { id } = req.params;
-  try {
-    res.status(200).json(`get ${id} exercise`);
-  } catch (error) {
-    res.status(500);
-    throw new Error(error);
-  }
-};
+import mongoose from "mongoose";
+import Exercise from "../model/exerciseModel.js";
 
-export const getAllExercises = (req, res) => {
+export const getAllExercises = async (req, res) => {
   try {
-    res.status(200).json(`get all exercises`);
+    const exercises = await Exercise.find();
+    res.status(200).json({ message: "Exercises fetched!", exercises });
   } catch (error) {
     res.status(500);
     throw new Error(error);
@@ -18,32 +12,64 @@ export const getAllExercises = (req, res) => {
   res.status(200).json({ message: "get all of the exercises" });
 };
 
-export const createExercise = (req, res) => {
-  const { title } = req.body;
-  try {
-    title
-      ? res.status(200).json(`create ${title} exercise`)
-      : res.status(400).json({ message: "your exercise needs a title" });
-  } catch (error) {
-    res.status(500);
-    throw new Error(`your exercise needs a title`);
-  }
-};
-
-export const updateExercise = (req, res) => {
+export const getAnExercise = async (req, res) => {
   const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ message: `no exercise with id of ${id}` });
+  }
   try {
-    res.status(200).json(`update ${id} exercise`);
+    const exercise = await Exercise.findById(id);
+    res.status(200).json({ message: `exercise found`, exercise });
   } catch (error) {
     res.status(500);
     throw new Error(error);
   }
 };
 
-export const deleteExercise = (req, res) => {
-  const { id } = req.params;
+export const createExercise = async (req, res) => {
+  const fields = req.body;
+  if (!fields.title)
+    return res.status(400).json({ message: "title is required" });
+  const newExercise = new Exercise({
+    ...fields,
+    createdAt: new Date().toISOString(),
+  });
   try {
-    res.status(200).json(`delete ${id} exercise`);
+    await newExercise.save();
+    res.status(200).json(`${fields.title} exercise created`);
+  } catch (error) {
+    res.status(500);
+    throw new Error(error);
+  }
+};
+
+export const updateExercise = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ message: `no exercise with id of ${id}` });
+  }
+  try {
+    const updatedExercise = await Exercise.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    res
+      .status(200)
+      .json({ message: `${id} exercise updated`, updatedExercise });
+  } catch (error) {
+    res.status(500);
+    throw new Error(error);
+  }
+};
+
+export const deleteExercise = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({ message: `no exercise with id of ${id}` });
+  }
+  try {
+    await Exercise.findByIdAndRemove(id);
+
+    res.status(200).json({ message: `${id} exercise delete` });
   } catch (error) {
     res.status(500);
     throw new Error(error);
